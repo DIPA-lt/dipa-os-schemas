@@ -13,7 +13,7 @@
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--wash); color:var(--text); font:15px/1.5 Inter,system-ui,sans-serif; }
-  .page { max-width:1180px; margin:0 auto; padding:32px 20px 80px; }
+  .page { width:100%; max-width:none; margin:0; padding:28px 32px 80px; }
   .kicker { margin:0 0 6px; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); }
   h1 { margin:0 0 8px; font-size:30px; letter-spacing:-.03em; color:var(--ink); }
   h2 { margin:0; font-size:20px; letter-spacing:-.02em; color:var(--ink); }
@@ -24,7 +24,7 @@
   .rule span { color:var(--muted); font-size:12.5px; }
   .legend { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
   .pill { display:inline-block; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; }
-  .p-sys { background:#EEF0FF; color:var(--brand); }
+  .p-sys { background:var(--brand); color:#fff; }
   .p-lau { background:#E8F6EE; color:var(--green); }
   .p-money { background:#FBF3DC; color:var(--amber); }
   .p-bad { background:#FBEAE4; color:var(--red); }
@@ -37,8 +37,22 @@
   .sec-h { display:flex; align-items:baseline; gap:10px; margin:0 0 4px; }
   .sec-n { font-size:12px; font-weight:700; color:var(--brand); letter-spacing:.06em; }
   .sec p { margin:0 0 12px; color:var(--muted); }
-  .diagram { overflow:auto; margin:0 -4px 8px; padding:4px; }
-  .diagram svg { display:block; margin:0 auto; max-width:100%; height:auto; }
+  .schema { margin:0 0 12px; }
+  .zoombar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 8px; }
+  .zoombar button {
+    appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:8px; height:32px; min-width:32px; padding:0 10px;
+    font:600 14px/1 Inter,system-ui,sans-serif; cursor:pointer;
+  }
+  .zoombar button:hover { border-color:var(--brand); color:var(--brand); }
+  .zoombar .zpct { min-width:52px; text-align:center; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .zoombar .zhint { margin-left:6px; font-size:12px; color:var(--muted); }
+  .diagram {
+    overflow:auto; height:78vh; min-height:420px; padding:12px;
+    border:1px solid var(--line); border-radius:12px; background:#F8F9FC; cursor:grab;
+  }
+  .diagram.is-drag { cursor:grabbing; }
+  .diagram svg { display:block; max-width:none; height:auto; }
   .route-result { margin:0 0 8px; padding:10px 12px; background:var(--ink); color:#fff; border-radius:10px; font-size:14px; }
   .route-result b { display:block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#B7BDE4; margin-bottom:2px; }
   .open { background:#FBF3DC; border:1px solid #E6D7A8; border-radius:10px; padding:10px 12px; color:var(--ink); margin:8px 0 4px; }
@@ -50,7 +64,8 @@
     body { background:#fff; }
     .page { max-width:none; padding:0; }
     .sec { break-inside:avoid; }
-    nav.jump { display:none; }
+    nav.jump, .zoombar .zhint { display:none; }
+    .diagram { height:auto; min-height:0; overflow:visible; cursor:default; }
     * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 </style>
@@ -498,7 +513,7 @@ flowchart LR
     theme: "base",
     themeVariables: {
       fontFamily: "Inter, system-ui, sans-serif",
-      fontSize: "14px",
+      fontSize: "16px",
       primaryColor: "#EEF0FF",
       primaryTextColor: "#0A1140",
       primaryBorderColor: "#CDD2FF",
@@ -510,20 +525,20 @@ flowchart LR
       clusterBorder: "#E2E4EC",
       edgeLabelBackground: "#ffffff"
     },
-    themeCSS: ".nodeLabel{line-height:1.35}.edgeLabel{font-size:12px;color:#3d4460}",
+    themeCSS: ".nodeLabel{line-height:1.35}.edgeLabel{font-size:13px;color:#3d4460}.sys .nodeLabel,.sys .nodeLabel *,.out .nodeLabel,.out .nodeLabel *{color:#ffffff !important;fill:#ffffff !important}",
     flowchart: {
       htmlLabels: true,
       curve: "basis",
-      padding: 16,
-      nodeSpacing: 28,
-      rankSpacing: 46,
-      wrappingWidth: 280,
-      useMaxWidth: true
+      padding: 18,
+      nodeSpacing: 36,
+      rankSpacing: 56,
+      wrappingWidth: 320,
+      useMaxWidth: false
     }
   });
   const styles = {
     lauris: "fill:#E8F6EE,stroke:#146C43,color:#0A1140",
-    sys: "fill:#EEF0FF,stroke:#1C0BFF,color:#0A1140",
+    sys: "fill:#1C0BFF,stroke:#1208B8,color:#ffffff",
     money: "fill:#FBF3DC,stroke:#8A5A00,color:#0A1140",
     stock: "fill:#F5F6F9,stroke:#8C93A8,color:#0A1140",
     vo: "fill:#F1EDFC,stroke:#5B3FB8,color:#0A1140",
@@ -545,12 +560,79 @@ flowchart LR
       try {
         const { svg } = await mermaid.render("mmd-" + i, src);
         el.innerHTML = svg;
+        mountZoom(el);
       } catch (err) {
         el.className = "err";
         el.textContent = "This schema did not draw: " + (err && err.message ? err.message : err);
       }
     }
   })();
+
+  function mountZoom(drawn) {
+    const svg = drawn.querySelector("svg");
+    const frame = drawn.closest(".diagram");
+    if (!svg || !frame || !svg.viewBox || !svg.viewBox.baseVal || !svg.viewBox.baseVal.width) return;
+    const natW = svg.viewBox.baseVal.width;
+    const natH = svg.viewBox.baseVal.height;
+    let scale = 1;
+    const bar = document.createElement("div");
+    bar.className = "zoombar";
+    bar.innerHTML = '<button type="button" data-z="out" aria-label="Zoom out">−</button><span class="zpct">100%</span><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="fit">Fit width</button><button type="button" data-z="reset">100%</button><span class="zhint">Ctrl + scroll to zoom. Drag to move.</span>';
+    const wrap = document.createElement("div");
+    wrap.className = "schema";
+    frame.parentNode.insertBefore(wrap, frame);
+    wrap.appendChild(bar);
+    wrap.appendChild(frame);
+    function apply() {
+      const w = Math.round(natW * scale);
+      const h = Math.round(natH * scale);
+      svg.setAttribute("width", String(w));
+      svg.setAttribute("height", String(h));
+      svg.style.width = w + "px";
+      svg.style.height = h + "px";
+      svg.style.maxWidth = "none";
+      bar.querySelector(".zpct").textContent = Math.round(scale * 100) + "%";
+    }
+    bar.addEventListener("click", (e) => {
+      const button = e.target.closest("button");
+      if (!button) return;
+      const z = button.dataset.z;
+      if (z === "in") scale = Math.min(3, Math.round((scale + 0.25) * 100) / 100);
+      if (z === "out") scale = Math.max(0.5, Math.round((scale - 0.25) * 100) / 100);
+      if (z === "reset") scale = 1;
+      if (z === "fit") scale = Math.max(0.5, Math.min(3, (frame.clientWidth - 24) / natW));
+      apply();
+    });
+    frame.addEventListener("wheel", (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      scale = Math.max(0.5, Math.min(3, scale + (e.deltaY < 0 ? 0.1 : -0.1)));
+      apply();
+    }, { passive: false });
+    let drag = null;
+    frame.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, y: e.clientY, left: frame.scrollLeft, top: frame.scrollTop };
+      frame.classList.add("is-drag");
+      frame.setPointerCapture(e.pointerId);
+    });
+    frame.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      frame.scrollLeft = drag.left - (e.clientX - drag.x);
+      frame.scrollTop = drag.top - (e.clientY - drag.y);
+    });
+    function endDrag() { drag = null; frame.classList.remove("is-drag"); }
+    frame.addEventListener("pointerup", endDrag);
+    frame.addEventListener("pointercancel", endDrag);
+    apply();
+    requestAnimationFrame(function () {
+      const fit = (frame.clientWidth - 24) / natW;
+      if (fit > 1) {
+        scale = Math.min(fit, 2.5);
+        apply();
+      }
+    });
+  }
 </script>
 </body>
 </html>
