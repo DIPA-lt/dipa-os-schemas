@@ -1,382 +1,556 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
 <title>DIPA OS · Process schemas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink:#0A1140; --text:#22222B; --muted:#5C6478; --line:#E2E4EC; --wash:#F4F5F8;
-    --brand:#1C0BFF; --green:#146C43; --green-bg:#E7F6EE; --amber:#8A5A00; --amber-bg:#FBF3DC;
-    --red:#8E2A12; --red-bg:#FBEAE4; --blue:#2C4BB8; --blue-bg:#EEF0FF;
+    --ink:#0A1140; --text:#2A2D3A; --muted:#626A80; --line:#E3E5EC; --wash:#F5F6F9;
+    --brand:#1C0BFF; --green:#146C43; --amber:#8A5A00; --red:#A3341A; --violet:#5B3FB8;
   }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--wash); color:var(--text); font:15px/1.45 Inter,system-ui,sans-serif; }
-  .page { max-width:1180px; margin:0 auto; padding:28px 18px 72px; }
+  body { margin:0; background:var(--wash); color:var(--text); font:15px/1.5 Inter,system-ui,sans-serif; }
+  .page { max-width:1180px; margin:0 auto; padding:32px 20px 80px; }
   .kicker { margin:0 0 6px; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); }
-  h1 { margin:0 0 8px; font-size:32px; letter-spacing:-.03em; color:var(--ink); }
+  h1 { margin:0 0 8px; font-size:30px; letter-spacing:-.03em; color:var(--ink); }
   h2 { margin:0; font-size:20px; letter-spacing:-.02em; color:var(--ink); }
-  .lede { margin:0 0 16px; max-width:760px; color:var(--muted); }
-  .legend { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 22px; }
-  .pill { display:inline-block; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
-  .p-now { background:var(--green-bg); color:var(--green); }
-  .p-agreed { background:var(--blue-bg); color:var(--blue); }
-  .p-open { background:var(--amber-bg); color:var(--amber); }
-  .p-gap { background:var(--red-bg); color:var(--red); }
-  nav.jump { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 28px; }
+  .lede { margin:0 0 16px; max-width:780px; color:var(--muted); }
+  .rules { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 16px; }
+  .rule { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .rule b { display:block; color:var(--ink); font-size:13px; margin-bottom:2px; }
+  .rule span { color:var(--muted); font-size:12.5px; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .pill { display:inline-block; border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; }
+  .p-sys { background:#EEF0FF; color:var(--brand); }
+  .p-lau { background:#E8F6EE; color:var(--green); }
+  .p-money { background:#FBF3DC; color:var(--amber); }
+  .p-bad { background:#FBEAE4; color:var(--red); }
+  .p-vo { background:#F1EDFC; color:var(--violet); }
+  .p-out { background:var(--ink); color:#fff; }
+  nav.jump { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 22px; }
   nav.jump a { color:var(--ink); text-decoration:none; background:#fff; border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:13px; font-weight:600; }
-  section { margin:0 0 28px; }
-  .sec { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 18px 8px; }
-  .sec-h { display:flex; align-items:baseline; gap:10px; margin:0 0 6px; }
-  .sec-h .n { font-size:12px; font-weight:700; color:var(--brand); }
-  .sec p.why { margin:0 0 14px; color:var(--muted); }
-  .route { display:grid; grid-template-columns:42px 1fr; gap:10px; margin:0 0 12px; }
-  .num { width:42px; height:42px; border-radius:10px; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
-  .card { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; }
-  .card .top { padding:10px 12px 8px; }
-  .card h3 { margin:0 0 2px; font-size:15px; color:var(--ink); }
-  .card .who { margin:0; font-size:12px; color:var(--muted); }
-  .card .do { margin:6px 0 0; font-size:13.5px; }
-  .result { margin:0; padding:8px 12px; background:var(--ink); color:#fff; font-size:13.5px; }
-  .result b { display:block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#B7BDE4; margin-bottom:2px; }
-  .row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0 0 12px; }
-  .row.two { grid-template-columns:1fr 1fr; }
-  .row.four { grid-template-columns:repeat(4,1fr); }
-  .mini { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; }
-  .mini .top { padding:10px 12px 8px; }
-  .mini h3 { margin:0 0 4px; font-size:14px; color:var(--ink); }
-  .mini p { margin:0; font-size:13px; color:var(--text); }
-  .mini .result { font-size:13px; }
-  .funnel { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:0 0 12px; }
-  .stage { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
-  .stage .top { padding:10px 10px 8px; flex:1; }
-  .stage .k { font-size:11px; font-weight:700; color:var(--muted); }
-  .stage h3 { margin:2px 0 6px; font-size:14px; color:var(--ink); }
-  .stage p { margin:0; font-size:12.5px; }
-  .stage .result { font-size:12.5px; }
-  .stage.lau { border-top:3px solid var(--green); }
-  .stage.sys { border-top:3px solid var(--brand); }
-  .exits { display:flex; flex-direction:column; gap:4px; margin-top:8px; }
-  .ex { border-radius:8px; padding:4px 6px; font-size:12px; background:var(--wash); }
-  .formula { margin:0 0 12px; padding:10px 12px; background:var(--blue-bg); border-radius:10px; color:var(--ink); font-weight:600; }
-  footer { font-size:12px; color:var(--muted); }
-  @media (max-width:900px) {
-    .row, .row.two, .row.four, .funnel { grid-template-columns:1fr; }
+  section { margin:0 0 16px; }
+  .sec { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 18px 12px; }
+  .sec-h { display:flex; align-items:baseline; gap:10px; margin:0 0 4px; }
+  .sec-n { font-size:12px; font-weight:700; color:var(--brand); letter-spacing:.06em; }
+  .sec p { margin:0 0 12px; color:var(--muted); }
+  .diagram { overflow:auto; margin:0 -4px 8px; padding:4px; }
+  .diagram svg { display:block; margin:0 auto; max-width:100%; height:auto; }
+  .route-result { margin:0 0 8px; padding:10px 12px; background:var(--ink); color:#fff; border-radius:10px; font-size:14px; }
+  .route-result b { display:block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#B7BDE4; margin-bottom:2px; }
+  .open { background:#FBF3DC; border:1px solid #E6D7A8; border-radius:10px; padding:10px 12px; color:var(--ink); margin:8px 0 4px; }
+  .open ol { margin:6px 0 0; padding-left:18px; }
+  footer { margin-top:8px; font-size:12px; color:var(--muted); }
+  .err { color:var(--red); font-size:13px; white-space:pre-wrap; }
+  @media (max-width:800px) { .rules { grid-template-columns:1fr 1fr; } }
+  @media print {
+    body { background:#fff; }
+    .page { max-width:none; padding:0; }
+    .sec { break-inside:avoid; }
+    nav.jump { display:none; }
+    * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 </style>
 </head>
 <body>
 <div class="page">
-  <p class="kicker">DIPA OS · schemas · 21 Oct agreement, phone updated 22 Oct</p>
-  <h1>Each route exists to produce one result.</h1>
-  <p class="lede">A lead is not a client. Cash is not a sale. A sent invoice is not a paid invoice. A step that does not change the stock is not a stage. Lithuanian words are the words on the screen.</p>
-  <div class="legend">
-    <span class="pill p-now">Works today</span>
-    <span class="pill p-agreed">Agreed</span>
-    <span class="pill p-open">Open</span>
-    <span class="pill p-gap">Not built</span>
+  <p class="kicker">DIPA OS · agreed schemas · 21 Oct 2026 · redrawn 26 Oct</p>
+  <h1>Each route states the result it exists to produce.</h1>
+  <p class="lede">These are the mermaid schemas of the sales process and the three sheets. A lead is not a client. Cash is not a sale. A sent invoice is not a paid invoice. Lithuanian words are the words on the screen. The desk pipe and the six-stage funnel are two different routes.</p>
+
+  <div class="rules">
+    <div class="rule"><b>A stage is a stock</b><span>Arrived, left, still sitting, and the week change. Sitting = was + arrived − left.</span></div>
+    <div class="rule"><b>The result is the next stock</b><span>A stage that only feels warmer is not a stage. A refusal is lost.</span></div>
+    <div class="rule"><b>One number, one place</b><span>The first level is the picture. A click goes deeper. The same fact is not drawn twice.</span></div>
+    <div class="rule"><b>VAT</b><span>Pardavimai, invoices issued, are ex VAT. Pajamos and skola are with VAT.</span></div>
   </div>
+
+  <div class="legend">
+    <span class="pill p-sys">System</span>
+    <span class="pill p-lau">Lauris · green zone</span>
+    <span class="pill p-vo">Virtual operator · separate lane</span>
+    <span class="pill p-money">Money</span>
+    <span class="pill p-bad">Lost or cancelled</span>
+    <span class="pill p-out">Result of the route</span>
+  </div>
+
   <nav class="jump">
-    <a href="#desk">1 · The desk</a>
-    <a href="#gate">2 · Before it is a lead</a>
-    <a href="#funnel">3 · The funnel</a>
-    <a href="#sheets">4 · Three sheets</a>
-    <a href="#numbers">5 · Where a number lands</a>
+    <a href="#sheets">1 · Three sheets</a>
+    <a href="#gates">2 · Vartai</a>
+    <a href="#funnel">3 · Piltuvėlis</a>
+    <a href="#week">4 · One worked week</a>
+    <a href="#sales">5 · Pardavimai</a>
+    <a href="#plan">6 · Week plan</a>
+    <a href="#money">7 · Pinigai</a>
+    <a href="#strategy">8 · Strategija</a>
+    <a href="#desk">9 · The desk</a>
+    <a href="#lands">10 · Where a number lands</a>
   </nav>
 
-  <section id="desk">
+  <section id="sheets">
     <div class="sec">
-      <div class="sec-h"><span class="n">01</span><h2>The desk. One company, from arrival to a deal.</h2></div>
-      <p class="why">This is the seller’s route on the lead. It is not the dashboard funnel. A person confirms before anything is written. Discard writes nothing.</p>
-
-      <div class="route">
-        <div class="num">1</div>
-        <div class="card">
-          <div class="top">
-            <h3>A company becomes a lead <span class="pill p-now">Works today</span></h3>
-            <p class="who">Website form · Kajabi · partner sheet (KROT, Meta) · Lead Finder · one company picked from Monday · typed or imported</p>
-            <p class="do">Every door writes the same lead record. The source is kept. Lead Finder goes search, then ICP score A/B/C/D, then a quick screen, then deep research, then promote.</p>
-          </div>
-          <p class="result"><b>Result</b>One desk. Owner, phone, email, company. The same business does not need a second kind of record.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">2</div>
-        <div class="card">
-          <div class="top">
-            <h3>Monday check, before anyone works it <span class="pill p-now">Works today</span></h3>
-            <p class="who">Read-only lookup · cached 7 days · recheck on demand</p>
-            <p class="do">Nėra CRM: nothing in Monday, work it as new. Jau CRM: the company exists, confirm before assigning. Užimta: active client or another seller’s open deal, do not assign. Nepatikrinta: lookup failed. A failed lookup is never shown as clear.</p>
-          </div>
-          <p class="result"><b>Result</b>The seller knows whether to start, confirm, or stop. A duplicate is not created by accident.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">3</div>
-        <div class="card">
-          <div class="top">
-            <h3>The lead is the desk <span class="pill p-now">Works today</span></h3>
-            <p class="who">Lauris opens Leads. Three tabs, three jobs.</p>
-            <p class="do">Šiandien is the action: owner, Warm/Cold set only by a person, the phone, the deal, the latest call, Siųsti į Monday. Prieš skambutį is the brief: who to call, with evidence, up to three builds, three implementations, three opening questions. Empty means research has not been run. Medžiaga is the file: score, tier, maturity, background.</p>
-          </div>
-          <p class="result"><b>Result</b>Monday morning starts on the lead, not on a dashboard. What to do, what to read, and the file are three places on purpose.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">4</div>
-        <div class="card">
-          <div class="top">
-            <h3>Call from the lead <span class="pill p-now">Works today</span></h3>
-            <p class="who">The button on the lead is the habit. The floating phone is the second choice.</p>
-            <p class="do">Dial the number on this lead. The pre-call card shows who matched, then Call now. Coach and transcript sit beside the call. Nesutiko ends the call and drops the transcript. Call history gets a row either way. A short call gets no draft. Outbound from +370 647 21374 was tested on 22 Oct and goes through. An inbound call onto the right lead has not been shown.</p>
-          </div>
-          <p class="result"><b>Result</b>The attempt is visible on the lead, whether or not they talked. The team does not keep a second log of the same call.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">5</div>
-        <div class="card">
-          <div class="top">
-            <h3>Confirm writes. Discard writes nothing. <span class="pill p-now">Works today</span></h3>
-            <p class="who">The seller. The model may draft. It does not write alone.</p>
-            <p class="do">Confirm stores the pipeline stage, Warm or Cold only if the seller chose one, a follow-up task “Susisiekti: {company}” on the owner, and a calendar event only when date and time are both set. Email and LinkedIn text stay for the seller to copy. Confirm does not send them. If the lead was already pushed to Monday, the review updates Monday in the background.</p>
-          </div>
-          <p class="result"><b>Result</b>The next morning has an owner and a task. A discarded draft leaves the lead as it was.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">6</div>
-        <div class="card">
-          <div class="top">
-            <h3>The stage, in Monday’s words <span class="pill p-now">Works today</span></h3>
-            <p class="who">Set by the seller. Nedomina can be set from any stage.</p>
-            <p class="do">Bendravimas atidėtas → Deriname susitikimą → Suderintas susitikimas → Laukia pasiūlymo → Laukiame sprendimo → Laukiame apmokėjimo → Klientas (sumokėjo). This pipe is the desk. It is not the six-stage dashboard funnel.</p>
-          </div>
-          <p class="result"><b>Result</b>DIPA OS and Monday use the same status words, so a push does not translate the lead into a second language.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">7</div>
-        <div class="card">
-          <div class="top">
-            <h3>Money is a deal, born on the lead <span class="pill p-now">Works today</span></h3>
-            <p class="who">Atidaryti sandorį on Šiandien. One open deal per lead. There is no create button on the Deals page.</p>
-            <p class="do">Didžiosios dirbtuvės store seats and a month, a place in the room of 40. Dedikuotos store hours and a month, Mantas’s time, not a seat. Prenumerata, PLAUD, and Kita store a title and an amount. Mark won and Mark lost are a person’s click. A sent invoice does not flip the deal. Deleting the deal keeps a workshop enrollment already attached.</p>
-          </div>
-          <p class="result"><b>Result</b>The money object belongs to that company. A seat, a block of hours, and a subscription are not the same number.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">8</div>
-        <div class="card">
-          <div class="top">
-            <h3>The letter is drafted on the lead <span class="pill p-now">Works today</span></h3>
-            <p class="who">The seller sends it. The app does not.</p>
-            <p class="do">Pradžia for a first or cold letter. Tęsinys to remind or return after a pause. Pokalbis to invite, confirm a time, or follow a call. Sprendimas for the proposal, the wait, payment, a check-in, or leaving the door open.</p>
-          </div>
-          <p class="result"><b>Result</b>The letter matches the stage the lead is actually in. Sending stays a human act.</p>
-        </div>
-      </div>
-
-      <div class="route">
-        <div class="num">9</div>
-        <div class="card">
-          <div class="top">
-            <h3>Monday, once, then kept in step <span class="pill p-now">Works today</span></h3>
-            <p class="who">Siųsti į Monday pushes onto the Marketing Leads board. The Leads board inside the DIPA CRM workspace is a different board.</p>
-            <p class="do">One push. If the company is already known, the seller confirms before a second item. After that the button becomes Atidaryti Monday. Later confirmed reviews update summary, stage, follow-up date, and contact date. A lead that was never pushed stays only in DIPA OS.</p>
-          </div>
-          <p class="result"><b>Result</b>Marketing has one item per company, and later changes do not require a second copy.</p>
-        </div>
-      </div>
+      <div class="sec-h"><span class="sec-n">1</span><h2>Three sheets. Three questions.</h2></div>
+      <p>Pinigai, Pardavimai, and Strategija do not share the same numbers. Only one figure travels between them. The screen’s third tab is labelled CEO.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart LR
+  strat["<b>Strategija</b><br/>Igoris and Mantas<br/>Warehouse, sources, multiplier<br/><b>Result.</b> Whether raw material and people can feed the plan."]
+  pard["<b>Pardavimai</b><br/>Lauris<br/>Counts, days, the funnel, the week plan<br/><b>Result.</b> What is stuck, and where this week goes."]
+  pin["<b>Pinigai</b><br/>The whole team<br/>Aušrinė types until Business Central<br/><b>Result.</b> Whether the week made money."]
+  strat -->|"how many must sit in each stage"| pard
+  pard -->|"won is a count of invoices sent"| pin
+  pin -->|"week and month income plan"| strat
+  class strat sys
+  class pard lauris
+  class pin money
+      </script></div>
+      <p class="route-result"><b>Result of this route</b>Each owner opens one sheet and gets one question. Euros stay on Pinigai. The funnel stays on Pardavimai. The warehouse stays on Strategija.</p>
     </div>
   </section>
 
-  <section id="gate">
+  <section id="gates">
     <div class="sec">
-      <div class="sec-h"><span class="n">02</span><h2>Before a lead exists, the message is sorted.</h2></div>
-      <p class="why">The route exists so Lauris’s time is qualification and proposals. Delivery, repeats, and tests do not enter his queue.</p>
-      <div class="row">
-        <article class="mini">
-          <div class="top">
-            <h3>Test of the virtual operator <span class="pill p-agreed">Agreed</span></h3>
-            <p>The message is labelled TESTAS. The virtual operator is a pilot, not a seller.</p>
-          </div>
-          <p class="result"><b>Result</b>It is not a lead. It does not enter the warehouse and it is not counted as demand.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Repeat, delivery, or “something doesn’t work” <span class="pill p-gap">Not built</span></h3>
-            <p>This belongs to Aušrinė. Today it can still land on Lauris. He marks Report a problem once and forwards the contact. After a few reports the system is supposed to route the pattern itself.</p>
-          </div>
-          <p class="result"><b>Result</b>Aušrinė’s bank holds repeats and delivery. Lauris is not the inbox for work that is not a sale.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Otherwise it is a lead <span class="pill p-agreed">Agreed</span></h3>
-            <p>Warm: a person wrote first, from the web, ads, or LinkedIn. Cold: Lead Finder, DIPA found them. The two qualities are never added into one number.</p>
-          </div>
-          <p class="result"><b>Result</b>The warehouse starts at zero steps taken by DIPA. Warm demand and cold prospecting stay visible as two stocks.</p>
-        </article>
-      </div>
+      <div class="sec-h"><span class="sec-n">2</span><h2>Vartai. Before it is a lead.</h2></div>
+      <p>Lauris receives sales only. A test, a repeat course, a delivery question, and a broken thing are sorted before the warehouse. The web form already lands in DIPA OS. The virtual operator is a pilot, not a seller.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart TD
+  web["<b>A message</b><br/>Web form, ads, LinkedIn, email"]
+  phone["<b>A call to the public number</b>"]
+  vo["<b>Virtual operator</b><br/>Answers and finds the topic.<br/>A booked time goes to the calendar and a task."]
+  test{"Test of the operator?"}
+  drop["<b>TESTAS</b><br/><b>Result.</b> Not a lead. It does not enter the warehouse and it is not counted as demand."]
+  sale{"Is this a sale?"}
+  known{"Already Aušrinė's pattern?"}
+  bank["<b>Aušrinė's bank</b><br/>Repeat course, delivery, something broken.<br/><b>Result.</b> She handles it. It never becomes Lauris's work."]
+  once["<b>One mark</b><br/>Today these can still land on Lauris. He does not solve the client's job."]
+  rpt["<b>Report a problem</b><br/>Forwards the contact."]
+  learn["<b>Two to five reports</b><br/>From different sources. Not built yet.<br/><b>Result.</b> The next time, that pattern skips Lauris."]
+  thu["<b>Thursday</b><br/><b>Result.</b> A count of requests that were not his. They are not all fixed the same day."]
+  who{"Who started?"}
+  warm["<b>Warm</b><br/>The person wrote or called first.<br/>Web, ads, LinkedIn."]
+  cold["<b>Cold</b><br/>DIPA found them.<br/>Lead Finder."]
+  slot["<b>A booked time</b><br/><b>Result.</b> Calendar and a task, on the warm lead."]
+  wh["<b>1 · Sandėlis</b><br/><b>Result.</b> A lead with zero steps taken by DIPA. Warm and cold stay two stocks."]
+
+  phone --> vo --> test
+  web --> test
+  test -->|yes| drop
+  test -->|no| sale
+  sale -->|course, delivery, broken| known
+  known -->|yes| bank
+  known -->|landed on Lauris| once --> rpt
+  rpt --> learn
+  learn -->|next time| bank
+  rpt --> thu
+  sale -->|yes, a sale| who
+  who -->|the person| warm
+  who -->|we found them| cold
+  vo -.->|agreed a time| slot
+  slot -.-> warm
+  warm --> wh
+  cold --> wh
+
+  class web,phone,test,sale,known,who,warm,cold,wh sys
+  class vo,slot vo
+  class drop,bank,learn,thu stock
+  class once,rpt lauris
+      </script></div>
+      <p class="route-result"><b>Result of this route</b>The sales warehouse starts clean. Lauris’s time is left for the qualification call and the proposal.</p>
     </div>
   </section>
 
   <section id="funnel">
     <div class="sec">
-      <div class="sec-h"><span class="n">03</span><h2>The agreed funnel. A stage’s result is the next stock.</h2></div>
-      <p class="why">Draw this for Pardavimai, not for the lead card. The screen at /os/v2 is a first cut and is looser than this agreement. Igoris still confirms the funnel with Lauris and Mantas. <span class="pill p-open">Open</span></p>
-      <p class="formula">sėdi = buvo + atėjo − išėjo. Δ = sėdi now − sėdi a week ago. The same number is not drawn twice.</p>
-      <div class="funnel">
-        <article class="stage sys">
-          <div class="top">
-            <div class="k">1 · System</div>
-            <h3>Sandėlis</h3>
-            <p>Raw material. Lauris has not picked it up. Arrivals split into warm and Lead Finder. Nobody is called from here.</p>
-          </div>
-          <p class="result"><b>Result</b>Everyone leaves only into pre-qualification. The untouched pile is visible.</p>
-        </article>
-        <article class="stage sys">
-          <div class="top">
-            <div class="k">2 · System</div>
-            <h3>Prikvalifikacija</h3>
-            <p>Automatic. Not Lauris and not a phone call. Unscored is neither AB nor CD.</p>
-          </div>
-          <p class="result"><b>Result</b>Three stocks: AB bank, CD bank, and unscored. The call has not happened yet.</p>
-        </article>
-        <article class="stage lau">
-          <div class="top">
-            <div class="k">3 · Lauris</div>
-            <h3>Kvalifikacinis skambutis</h3>
-            <p>His week is how many calls he made. The number is written by the call, not by a second CRM entry. Changing AB to CD after the call is agreed and not in the app. <span class="pill p-gap">Not built</span></p>
-            <div class="exits">
-              <div class="ex">Pralaimėta. Not interested. This is lost, not relabelled as D.</div>
-              <div class="ex">Liko banke. Still sitting.</div>
-              <div class="ex">Nuėjo į pasiūlymą.</div>
-            </div>
-          </div>
-          <p class="result"><b>Result</b>The call has exactly three exits. Lost is a loss. Sitting stays a stock. The rest become proposals.</p>
-        </article>
-        <article class="stage lau">
-          <div class="top">
-            <div class="k">4 · Lauris</div>
-            <h3>Pasiūlymas</h3>
-            <p>Sending the proposal, and the proposal session. Norm is 5 days from the lead to here. A client can change quantity after the proposal. From here Lauris has less influence.</p>
-          </div>
-          <p class="result"><b>Result</b>Count sent, sum ex VAT, and the open bank. The open bank is the forecast. There is no separate forecast page.</p>
-        </article>
-        <article class="stage">
-          <div class="top">
-            <div class="k">5 · Client</div>
-            <h3>Sprendimas</h3>
-            <p>The client said yes this week. A decision can still be pushed, but the stage is the yes.</p>
-          </div>
-          <p class="result"><b>Result</b>A count of yeses. Not euros. Money stays on Pinigai.</p>
-        </article>
-        <article class="stage">
-          <div class="top">
-            <div class="k">6 · Won</div>
-            <h3>Won</h3>
-            <p>The meeting closed on invoice sent, plus a count of cancelled invoices. Lauris does not accept “invoice sent” as won. He wants paid to mean won. <span class="pill p-open">Open</span> Paid stays on Pinigai either way. People who paid this week are not the people who were won this week, because payment lags.</p>
-          </div>
-          <p class="result"><b>Result</b>A sale is an issued invoice. Cash collected is a different box. A cancelled invoice is fallout, not a silent disappearance.</p>
-        </article>
-      </div>
+      <div class="sec-h"><span class="sec-n">3</span><h2>Piltuvėlis. Six stages. The result is the next stock.</h2></div>
+      <p>Every arrow is a movement the system can count: it left one stage and arrived in the next. Sitting = was + arrived − left. The week change is sitting now minus sitting a week ago. This is the agreed funnel. It is not the eight statuses on the lead card.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart TB
+  sw["<b>Warm arrival</b><br/>Web, ads, LinkedIn, a call"]
+  sc["<b>Cold arrival</b><br/>Lead Finder"]
+  wh["<b>1 · Sandėlis</b><br/>Nobody at DIPA has taken a step.<br/><b>Result.</b> The untouched pile is visible. Everyone leaves only into pre-qualification. Nobody is called from here."]
+  pq["<b>2 · Prikvalifikacija</b><br/>Automatic. Not Lauris and not a phone call.<br/><b>Result.</b> A split into AB, CD, and unscored."]
+  ab["<b>AB bank</b><br/>The working queue.<br/><b>Result.</b> The leads Lauris can call."]
+  cd["<b>CD bank</b><br/>The other stock.<br/><b>Result.</b> A reserve, kept apart from AB."]
+  nv["<b>Unscored</b><br/><b>Result.</b> Neither AB nor CD. They are not pushed into CD to make a round number."]
+  heat["<b>CD warming</b><br/>Virtual operator. A separate lane.<br/><b>Result.</b> A booked conversation returns the lead to AB. These calls are not Lauris's count."]
+  qc["<b>3 · Kvalifikacinis skambutis</b><br/>Lauris. The call writes the number.<br/><b>Result.</b> How many calls this week, and exactly three exits."]
+  lost["<b>Pralaimėta</b><br/><b>Result.</b> Not interested. This is lost. It is not relabelled as a D."]
+  sit["<b>Liko banke</b><br/><b>Result.</b> Still a stock. The call did not move it."]
+  grade["<b>Letter after the call</b><br/>AB can become CD, or CD become AB.<br/>Not built yet.<br/><b>Result.</b> The call can change the bank."]
+  prop["<b>4 · Pasiūlymas</b><br/>Lauris sends it. Norm is 5 days from the lead.<br/>Count, sum ex VAT, average.<br/>Quantity can change, 2 seats can become 5.<br/><b>Result.</b> The open bank. That bank is the forecast."]
+  dec["<b>5 · Sprendimas</b><br/>The client said yes. A count, not euros.<br/><b>Result.</b> A yes. From here Lauris has less influence, and a decision can still be pushed."]
+  won["<b>6 · Won</b><br/>Invoice sent, as the meeting closed it.<br/><b>Result.</b> A sale on the board."]
+  fall["<b>Fallout</b><br/><b>Result.</b> A cancelled invoice is counted beside won. It does not disappear."]
+  paid["<b>Apmokėta</b><br/>Cash, with VAT, on Pinigai.<br/><b>Result.</b> Money that landed. Not the same people as this week's won, because payment lags."]
+  openq["<b>Open</b><br/>Lauris wants paid to mean won, because an unpaid invoice is not a client. Paid stays on Pinigai either way."]
+  red["<b>Red at 14 days</b><br/><b>Result.</b> Next week focuses on the pile that moves the most money."]
+
+  sw --> wh
+  sc --> wh
+  wh -->|"everyone leaves"| pq
+  pq -->|AB| ab
+  pq -->|CD| cd
+  pq -->|neither| nv
+  cd --> heat
+  heat -.->|"booked a call"| ab
+  ab -->|"Lauris calls"| qc
+  qc -->|"not interested"| lost
+  qc -->|"still sitting"| sit
+  qc -->|"letter changes"| grade
+  grade -.-> ab
+  grade -.-> cd
+  qc -->|"into the proposal"| prop
+  prop -->|"open bank is the forecast"| dec
+  dec -->|yes| won
+  dec -->|no| lost
+  won -->|cancelled| fall
+  won -->|paid| paid
+  won -.-> openq
+  qc -.->|"sitting 14 days"| red
+  prop -.->|"sitting 14 days"| red
+
+  class sw,sc,wh,pq,ab,cd,nv sys
+  class heat vo
+  class qc,prop,grade lauris
+  class dec,won cli
+  class paid money
+  class lost,fall,red bad
+  class sit,openq stock
+      </script></div>
+      <p class="route-result"><b>Result of this route</b>The week can be read as stocks. A refusal is a loss, an open proposal is the forecast, and cash is collected on a different sheet.</p>
+      <div class="open"><b>Still open with Lauris and Mantas.</b> The drawing is the agreement from 19 Oct, and Igoris confirms it with them before it is final. Lauris today also calls C leads. This drawing treats AB as the working bank and CD as the other stock.</div>
     </div>
   </section>
 
-  <section id="sheets">
+  <section id="week">
     <div class="sec">
-      <div class="sec-h"><span class="n">04</span><h2>Three sheets. They do not share the same numbers.</h2></div>
-      <p class="why">First level is the picture. A click goes deeper. Pardavimai, invoices issued, are ex VAT. Pajamos, cash that landed, are with VAT. Skola is with VAT, split into vėluoja and nevėluoja.</p>
-      <div class="row">
-        <article class="mini">
-          <div class="top">
-            <h3>Pinigai <span class="pill p-agreed">Agreed</span></h3>
-            <p>Igoris and the weekly picture. Sales ex VAT, cash with VAT, debt in two numbers, then the same sales sum by product (didžiosios, dedikuotos, kitos) and by seller. Workshop seats by month name. Plan versus fact. A red lamp when the week is under break-even needs one number they still have to hand. <span class="pill p-gap">Not built</span> Aušrinė types the invoice until Business Central sends “paid”. <span class="pill p-gap">Not built</span></p>
-          </div>
-          <p class="result"><b>Result</b>The room can see whether the week is making money, without opening the funnel.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Pardavimai <span class="pill p-agreed">Agreed</span></h3>
-            <p>Lauris. The funnel above, then speed: days to first touch, days to proposal against a 5-day norm, minutes per client from the calls. A bottleneck table names who is sitting and the age in days. Red at 14 days. The next action is the one that moves the most money. Quality comes from the call, not from typing the same facts into a second CRM. Off this page: cash, debt, VAT.</p>
-          </div>
-          <p class="result"><b>Result</b>Lauris sees what is stuck and spends the week on the pile that frees the most money. His remaining work is the call and the proposal.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Strategija <span class="pill p-agreed">Agreed</span></h3>
-            <p>The third tab is labelled CEO. The warehouse, and whether it grew. AB bank and CD bank, with Δ. Unscored in neither. Source mix, warm separate from cold. The proposal bank, open count and sum ex VAT, is the forecast. Average sold per client, the example was 2 or 2.5 seats, resizes how many people must sit at each stage. One money line only, so this page is not a second Pinigai. Seller capacity needs a month of data. <span class="pill p-gap">Not built</span></p>
-          </div>
-          <p class="result"><b>Result</b>Owners see whether the warehouse can feed the plan, and how many must sit at each stage to hit it.</p>
-        </article>
-      </div>
-      <div class="row two">
-        <article class="mini">
-          <div class="top">
-            <h3>The week plan <span class="pill p-gap">Not built</span></h3>
-            <p>Five windows: next week’s plan, last week’s plan, last week’s fact, a comment, a recommendation. The plan names calls, proposals, and decisions. It does not name a euro target. The comment says what was planned badly. It becomes dynamic from fact only after a month of Lauris’s weeks. Spoken example for week 42, not live data: next week 3 calls, 10 proposals, 3 decisions.</p>
-          </div>
-          <p class="result"><b>Result</b>Next week’s work is named from last week’s fact, and the five largest clients are pushed first inside the 5-day norm.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>What the route refuses to mix</h3>
-            <p>The sales page does not show euros. The money page does not show the funnel. No separate forecast. The headline is the sum of the people, not one person’s number. A case that arrives to Mantas normally goes to Lauris, unless the client asks Mantas to finish it.</p>
-          </div>
-          <p class="result"><b>Result</b>Each owner opens one sheet and gets one question answered. The same fact is not maintained in two places.</p>
-        </article>
-      </div>
+      <div class="sec-h"><span class="sec-n">4</span><h2>One worked week, in Igoris’s numbers.</h2></div>
+      <p>An example he spoke, not this week’s data. He also said 110 and 120 while revising. The set below is the one that balances. He did not split the last 3, so the schema does not invent that split. The 2 without a letter stay unscored.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart TD
+  w["<b>Sandėlis</b><br/>was 100 + arrived 10 − left 30 = sitting 80<br/>week change −20<br/><b>Result.</b> The pile shrank, and all 30 left into pre-qualification."]
+  p["<b>Prikvalifikacija</b><br/>30 done. Not a call.<br/><b>Result.</b> 4 new AB, 24 CD, 2 with no letter."]
+  abn["<b>AB new: 4</b>"]
+  cdn["<b>CD: 24</b><br/><b>Result.</b> Reserve. Not added to the working queue."]
+  gap["<b>2 with no letter</b><br/><b>Result.</b> Unscored. Not pushed into CD to make 30."]
+  abb["<b>AB bank</b><br/>was 4 + new 4 = 8<br/><b>Result.</b> The queue Lauris called."]
+  c["<b>Kvalifikacinis</b><br/>Called from the 8. 3 left. 5 still sit.<br/><b>Result.</b> The call count is his week. The 3 are not split further."]
+  unk["<b>3 not split</b><br/>Lost, or a proposal. He did not say.<br/><b>Result.</b> Proposal, decision, and won stocks stay blank in this example."]
+
+  w -->|"all 30"| p
+  p --> abn --> abb --> c --> unk
+  p --> cdn
+  p --> gap
+  class w,p,abn,cdn,gap,abb,c,unk sys
+      </script></div>
+      <p class="route-result"><b>Result of this route</b>A week can be checked. Sitting is arithmetic, and a missing split stays missing.</p>
     </div>
   </section>
 
-  <section id="numbers">
+  <section id="sales">
     <div class="sec">
-      <div class="sec-h"><span class="n">05</span><h2>Where a number lands. Three counts, not one sale.</h2></div>
-      <p class="why">Do not draw one box called “the sale” that writes all of these.</p>
-      <div class="row four">
-        <article class="mini">
-          <div class="top">
-            <h3>Workshop seats <span class="pill p-now">Works today</span></h3>
-            <p>A seat counts toward the 40 only when it is invoiced or paid, the amount is above zero, and it is not a repeat and not a trial. A month drops off the strip once its session has ended.</p>
-          </div>
-          <p class="result"><b>Result</b>The room of 40 shows paid places. Repeaters, trial, and free stay on the list and do not fill a seat.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>My week <span class="pill p-now">Works today</span></h3>
-            <p>Mantas’s hours are typed on My week. Mantas time only reads them.</p>
-          </div>
-          <p class="result"><b>Result</b>Dedicated-workshop capacity is hours, not seats. The board cannot drift from what was typed.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Sales OS v2 invoices <span class="pill p-now">Works today</span></h3>
-            <p>Aušrinė types them on Pinigai. This ledger is what the dashboard reads. It is not the lead desk. Business Central is meant to take “paid” over. <span class="pill p-gap">Not built</span></p>
-          </div>
-          <p class="result"><b>Result</b>The weekly money picture has one ledger. Until Business Central is connected, that ledger is what Aušrinė types.</p>
-        </article>
-        <article class="mini">
-          <div class="top">
-            <h3>Tasks and calendar <span class="pill p-now">Works today</span></h3>
-            <p>A confirmed call creates the follow-up. A meeting is created only when date and time are both set. A practice call must not create a real seller task. <span class="pill p-gap">Not built</span> on the local practice path.</p>
-          </div>
-          <p class="result"><b>Result</b>The seller returns to Šiandien on the due date. The next step is not a note that lives only in the call.</p>
-        </article>
-      </div>
+      <div class="sec-h"><span class="sec-n">5</span><h2>Pardavimai. Does the funnel move?</h2></div>
+      <p>Lauris’s sheet. Counts and days. No euros. He does not type the number by hand. It comes from the call and from the stage change. His green zone is the qualification call and the proposal.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart LR
+  cl["<b>Calls</b><br/>Recording, duration, score"]
+  rv["<b>Call review</b><br/>The stage he confirmed"]
+  ofs["<b>Proposals</b><br/>The day they were sent"]
+  hrs["<b>Where the hours went</b><br/>The frame they used was about 30 hours"]
+  fromS["<b>From Strategija</b><br/>How many must sit in each stage"]
+
+  t1["<b>Days to first touch</b><br/><b>Result.</b> How long a new lead waited."]
+  t2["<b>Days to the proposal</b><br/>Norm is 5.<br/><b>Result.</b> Whether Lauris still holds the pace."]
+  t3["<b>Minutes per client</b><br/>Taken from the calls.<br/><b>Result.</b> Time per client, without a second timesheet."]
+  fn["<b>Six stages</b><br/>Arrived, left, sitting, week change.<br/><b>Result.</b> The same funnel as the schema above."]
+  stk["<b>Where it stuck</b><br/>Who is sitting, and the oldest.<br/><b>Result.</b> The pile, with an age."]
+  ql["<b>Call quality</b><br/>Score and duration.<br/><b>Result.</b> Quality, kept apart from speed."]
+  zone["<b>Green zone</b><br/><b>Result.</b> What remains for Lauris is the call and the proposal. The aim is freed time."]
+
+  over{"Over 5 days?"}
+  old{"14 days or more?"}
+  focus["<b>Focus here</b><br/>14 days in qualification: focus there.<br/>Proposals piled up: turn them into decisions.<br/>Qualified and no meetings: stop pouring leads and call.<br/><b>Result.</b> Next week spends itself on the pile that moves the most money."]
+  toP["<b>To Pinigai</b><br/>Won, as a count of invoices sent."]
+  ask["<b>Result of this sheet</b><br/>Lauris sees whether the funnel moved, and the five largest clients go first."]
+
+  cl --> t3
+  cl --> ql
+  rv --> t1
+  rv --> fn
+  ofs --> t2
+  hrs --> zone
+  fromS --> ask
+  t1 --> fn
+  fn --> stk
+  t2 --> over
+  stk --> old
+  over -->|yes| focus
+  old -->|yes| focus
+  ql --> zone
+  zone --> focus
+  focus --> ask
+  fn --> toP
+  toP --> ask
+
+  class cl,rv,ofs,hrs stock
+  class fromS,t1,fn,stk,over,old sys
+  class t2,t3,ql,zone,focus lauris
+  class toP money
+  class ask out
+      </script></div>
     </div>
   </section>
 
-  <footer>Source: the 21 Oct diagram brief and the sales-process drawing. Outbound from the company number was tested on 22 Oct. This page is the schema. It is not the live screen at os.dipa.lt.</footer>
+  <section id="plan">
+    <div class="sec">
+      <div class="sec-h"><span class="sec-n">6</span><h2>How the week plan is born.</h2></div>
+      <p>Five windows: next week’s plan, last week’s plan, last week’s fact, a comment, a recommendation. The plan names calls, proposals, decisions, and clients. It does not name a euro target. It becomes dynamic from last week’s fact only after a month of Lauris’s weeks. That loop is not built yet. The spoken example for week 42, not live data: next week 3 qualification calls, 10 proposals, 3 decisions. The fact he gave for the week before: 2 qualification calls, 9 proposals sent, 7 deals covering 10 seats. “Prikvalifikacijos du” here means his calls, not the automatic split.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart LR
+  inc["<b>Income plan</b><br/>From Pinigai. Lauris states it.<br/>Sum of the people."]
+  mult["<b>Divide by seats per client</b><br/>The example was 2 or 2.5."]
+  need["<b>Clients to win</b>"]
+  sitn["<b>How many must sit</b><br/>in each stage"]
+  plan["<b>Next week's plan</b><br/>Calls, proposals, decisions,<br/>and the five clients with the most money."]
+  fact["<b>Fact</b><br/>From the calls and the invoices."]
+  learn["<b>Comment</b><br/>What was planned badly.<br/>Not why someone ran out of time."]
+  rec["<b>Recommendation</b><br/>The lowest-hanging money."]
+  cap["<b>Capacity</b><br/>Whether the sellers are enough.<br/>Needs a month of data. Not built yet."]
+  outp["<b>Result of this route</b><br/>Next week is named from last week's fact, inside the 5-day norm."]
+
+  inc --> mult --> need --> sitn --> plan
+  plan --> fact --> learn --> rec
+  rec -->|"next week"| plan
+  sitn -.-> cap
+  rec --> outp
+
+  class inc money
+  class mult,need,sitn,cap sys
+  class plan,fact,learn,rec lauris
+  class outp out
+      </script></div>
+    </div>
+  </section>
+
+  <section id="money">
+    <div class="sec">
+      <div class="sec-h"><span class="sec-n">7</span><h2>Pinigai. Are we making money?</h2></div>
+      <p>The headline is always the sum of the people. Aušrinė enters the amount and who sold it, until Business Central does. The seller is paid from that name, so the name on the invoice is required. She marks it paid by hand until Business Central sends that. The break-even lamp needs one number they still have to hand. There is no cost table on this sheet.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart LR
+  inv["<b>Invoices</b><br/>Aušrinė types amount, seller,<br/>Mantas's hours, and whether it is a workshop.<br/>Later, Business Central."]
+  bnk["<b>Cash in</b><br/>What landed in the account."]
+  ppl["<b>Income plan</b><br/>Lauris states it."]
+  reg["<b>Registrations</b><br/>Workshop seats."]
+  cst["<b>One cost line</b><br/>Break-even. Not built yet."]
+
+  sal["<b>Pardavimai</b><br/>Invoices issued. Ex VAT.<br/><b>Result.</b> What was sold this period."]
+  cash["<b>Pajamos</b><br/>Cash that landed. With VAT.<br/><b>Result.</b> What actually arrived."]
+  debt["<b>Skola</b><br/>Issued minus paid. With VAT.<br/><b>Result.</b> What is still owed."]
+  late{"Past the due date?"}
+  lateY["<b>Vėluoja</b><br/><b>Result.</b> Aušrinė chases this part."]
+  lateN["<b>Nevėluoja</b><br/><b>Result.</b> Owed, and not yet due."]
+  cut["<b>Same sales sum, split</b><br/>Didžiosios dirbtuvės, then dedikuotos<br/>as Mantas's hours, then kitos.<br/>PLAUD sits inside kitos.<br/>Then by seller: Mantas, Lauris, Aušrinė.<br/><b>Result.</b> The headline stays the total."]
+  pvf["<b>Plan against fact</b><br/>Week and month.<br/><b>Result.</b> The gap, as a percent of plan."]
+  brk["<b>Break-even lamp</b><br/><b>Result.</b> Red when the week is under the one number."]
+  seat["<b>Seats out of 40</b><br/>By month name. Lapkritis, Gruodis.<br/><b>Result.</b> The room, once. Not a second copy labelled M+2."]
+  toS["<b>To Strategija</b><br/>The income plan."]
+  ask["<b>Result of this sheet</b><br/>The room sees whether the week made money, without opening the funnel."]
+
+  inv --> sal
+  inv --> debt
+  bnk --> cash
+  bnk --> debt
+  sal --> cut
+  ppl --> pvf
+  cash --> pvf
+  cash --> brk
+  cst --> brk
+  reg --> seat
+  debt --> late
+  late -->|yes| lateY
+  late -->|no| lateN
+  pvf --> toS
+  brk --> ask
+  pvf --> ask
+  seat --> ask
+  cut --> ask
+  toS --> ask
+
+  class inv,bnk,ppl,reg,cst stock
+  class sal,cash,debt,cut,pvf,brk,seat,lateY,lateN money
+  class late sys
+  class toS sys
+  class ask out
+      </script></div>
+      <p class="route-result"><b>What this sheet refuses</b>No funnel, no call counts, no ROI sessions, no second forecast, no second “invoices with VAT” line, no action list, no lead counts.</p>
+    </div>
+  </section>
+
+  <section id="strategy">
+    <div class="sec">
+      <div class="sec-h"><span class="sec-n">8</span><h2>Strategija. Will raw material and people be enough?</h2></div>
+      <p>Igoris and Mantas. The sheet counts backward from the income plan. The multiplier is not a second finance page. One money line, and that is all. A case that arrives to Mantas normally goes to Lauris. The exception is a client who asks Mantas to finish it. Warm and cold are never added into one quality number.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart TD
+  fromP["<b>From Pinigai</b><br/>The income plan."]
+  wh2["<b>Sandėlis</b><br/>Potential. Lauris has not worked it.<br/><b>Result.</b> Whether the untouched pile grew or shrank."]
+  banks["<b>Banks</b><br/>AB with how many are new, CD, and unscored apart.<br/><b>Result.</b> Working queue, reserve, and the unnamed, as three stocks."]
+  src2["<b>Where it came from</b><br/>Warm: web, ads, LinkedIn.<br/>Cold: Lead Finder.<br/><b>Result.</b> Two qualities. Never one blended number."]
+  how["<b>How the client arrived</b><br/>Not who sold.<br/>Default: the case goes to Lauris.<br/>Exception: the client asks Mantas to stay.<br/><b>Result.</b> One owner, chosen by the client's ask."]
+  ofb["<b>Proposal bank</b><br/>Open count, sum ex VAT, week change.<br/><b>Result.</b> The forecast. There is no second forecast."]
+  mul["<b>Seats per client</b><br/>Example 2 or 2.5.<br/><b>Result.</b> How many clients must be won to hit the plan."]
+  sitn["<b>How many must sit</b><br/>in each stage.<br/><b>Result.</b> The handoff to Pardavimai."]
+  line["<b>One money line</b><br/><b>Result.</b> A summary. This sheet is not a second Pinigai."]
+  capc["<b>Seller capacity</b><br/>Untouched AB times minutes per client.<br/>The example was short 1.5 sellers.<br/>Needs a month. Not built yet.<br/><b>Result.</b> A signal to hire or to automate."]
+  vo2["<b>Virtual operator lane</b><br/>Calls, booked times, CD warming.<br/><b>Result.</b> Visible, and kept out of Lauris's counts."]
+  ask["<b>Result of this sheet</b><br/>Owners see the gap in leads or in people before the week is spent."]
+
+  fromP --> mul --> sitn
+  wh2 --> banks --> src2 --> how
+  how --> ofb
+  ofb --> line
+  banks --> capc
+  sitn --> capc
+  sitn --> ask
+  ofb --> ask
+  capc --> ask
+  line --> ask
+  vo2 --> ask
+
+  class fromP,ofb,line money
+  class wh2,banks,src2,how,mul,sitn sys
+  class capc bad
+  class vo2 vo
+  class ask out
+      </script></div>
+    </div>
+  </section>
+
+  <section id="desk">
+    <div class="sec">
+      <div class="sec-h"><span class="sec-n">9</span><h2>The desk. One company, from arrival to the next morning.</h2></div>
+      <p>This is the route on the lead, and it works today. It is not the six-stage funnel. A person confirms before anything is written. Discard writes nothing. Outbound from +370 647 21374 was tested on 22 Oct and goes through. An inbound call landing on the right lead has not been shown.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart TD
+  d1["<b>1 · One lead</b><br/>Web, Kajabi, partner sheet, Lead Finder, one company picked from Monday, or typed in.<br/>Lead Finder is search, then an A/B/C/D score, a quick screen, deep research, then promote.<br/><b>Result.</b> One desk. Owner, phone, email, company. The source is kept."]
+  d2["<b>2 · Monday check</b><br/>Read only. Cached 7 days.<br/>Nėra CRM: work it as new.<br/>Jau CRM: confirm before assigning.<br/>Užimta: do not assign.<br/>Nepatikrinta: the lookup failed.<br/><b>Result.</b> Start, confirm, or stop. A failed lookup is never shown as clear."]
+  d3["<b>3 · Three tabs</b><br/>Šiandien: owner, Warm or Cold set by a person, the phone, the deal, the latest call.<br/>Prieš skambutį: who to call, with evidence. Empty means research has not been run.<br/>Medžiaga: score, tier, maturity, the file.<br/><b>Result.</b> Monday morning starts on the lead. What to do, what to read, and the file are three places."]
+  d4["<b>4 · Call from the lead</b><br/>The button on the lead is the habit. The floating phone is the second choice.<br/>Coach and transcript sit beside the call. Nesutiko ends it and drops the transcript.<br/>A short call gets no draft. Call history gets a row either way.<br/><b>Result.</b> The attempt is on the lead. The team does not keep a second log."]
+  d5["<b>5 · Confirm, or discard</b><br/>Confirm stores the stage, Warm or Cold only if he chose one,<br/>a task Susisiekti on the owner for the chosen morning,<br/>and a calendar event only when date and time are both set.<br/>Email and LinkedIn stay for him to copy. Confirm does not send them.<br/>A pushed lead updates Monday in the background.<br/><b>Result.</b> The next morning has an owner and a task. A discarded draft leaves the lead as it was."]
+  d6["<b>6 · Monday's status words</b><br/>Bendravimas atidėtas, Deriname susitikimą, Suderintas susitikimas,<br/>Laukia pasiūlymo, Laukiame sprendimo, Laukiame apmokėjimo, Klientas.<br/>Nedomina can be set from any stage.<br/><b>Result.</b> DIPA OS and Monday use the same words, so a push does not translate the lead."]
+  d7["<b>7 · The deal, born on the lead</b><br/>Atidaryti sandorį on Šiandien. One open deal. No create button on Deals.<br/>Didžiosios dirbtuvės: seats and a month, a place in the room of 40.<br/>Dedikuotos: hours and a month, Mantas's time, not a seat.<br/>Prenumerata, PLAUD, Kita: a title and an amount.<br/>Mark won and Mark lost are a person's click. A sent invoice does not flip the deal.<br/><b>Result.</b> The money object belongs to that company. A seat, a block of hours, and a subscription stay different numbers."]
+  d8["<b>8 · The letter</b><br/>Pradžia, Tęsinys, Pokalbis, Sprendimas. The seller sends it.<br/><b>Result.</b> The letter matches the stage. Sending stays a human act."]
+  d9["<b>9 · Monday, once</b><br/>Siųsti į Monday pushes onto the Marketing Leads board.<br/>A known company asks before a second item. The button then becomes Atidaryti Monday.<br/>The Leads board inside the CRM workspace is a different board.<br/><b>Result.</b> Marketing has one item per company. Later reviews update it. A lead never pushed stays only in DIPA OS."]
+  done["<b>Result of this route</b><br/>One company has one desk, one next action, and one money object. Nothing important is written by the model alone."]
+
+  d1 --> d2 --> d3 --> d4 --> d5 --> d6 --> d7 --> d8 --> d9 --> done
+  class d1,d2,d3,d4,d5,d6,d8,d9 sys
+  class d7 money
+  class done out
+      </script></div>
+      <p class="route-result"><b>Still not on this route</b>A practice call must not create a real seller task or a calendar event. Changing AB to CD after the call is a funnel rule, and the desk cannot do it yet.</p>
+    </div>
+  </section>
+
+  <section id="lands">
+    <div class="sec">
+      <div class="sec-h"><span class="sec-n">10</span><h2>Where a number lands.</h2></div>
+      <p>Four counts leave the same week. They are different objects. One box called “the sale” does not write all of them.</p>
+      <div class="diagram"><script type="text/plain" class="mmd">
+flowchart LR
+  week["<b>The same week</b>"]
+  seats["<b>Workshop seats</b><br/>Counts toward the 40 only when invoiced or paid,<br/>the amount is above zero, and it is not a repeat and not a trial.<br/>A month leaves the strip once the session has ended.<br/><b>Result.</b> The room of 40 shows paid places."]
+  hours["<b>My week</b><br/>Mantas's hours are typed there.<br/>The Mantas time board only reads them.<br/><b>Result.</b> Dedicated capacity is hours, not seats."]
+  ledger["<b>Sales OS v2 invoices</b><br/>Aušrinė types them on Pinigai.<br/>This is the ledger the dashboard reads. It is not the lead desk.<br/><b>Result.</b> The weekly money picture has one ledger, until Business Central takes paid."]
+  next["<b>Tasks and calendar</b><br/>A confirmed call creates the follow-up.<br/>A meeting exists only when date and time are both set.<br/><b>Result.</b> The seller returns to Šiandien on the due date."]
+  week --> seats
+  week --> hours
+  week --> ledger
+  week --> next
+  class week sys
+  class seats,hours,next lauris
+  class ledger money
+      </script></div>
+      <p class="route-result"><b>Result of this route</b>A seat, an hour, an invoice, and a task can each be true without forcing the other three.</p>
+    </div>
+  </section>
+
+  <div class="open">
+    <b>Open, on purpose.</b>
+    <ol>
+      <li>Won. The meeting closed on “invoice sent”, with a required cancellation count. Lauris holds won as paid.</li>
+      <li>CD. Whether CD is also Lauris’s calling queue, or only the automation lane.</li>
+      <li>Business Central filling invoices and paid status. Aušrinė types both until then.</li>
+      <li>The break-even number, the seller-capacity signal, and the week plan that rewrites itself. Each needs data the sheet does not have yet.</li>
+    </ol>
+  </div>
+
+  <footer>Sources: the 21 Oct agreed schemas, the ideal funnel drawing, and the diagram brief. Outbound from the company number was tested on 22 Oct. This page is the schema. The live app stays at os.dipa.lt.</footer>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: "loose",
+    theme: "base",
+    themeVariables: {
+      fontFamily: "Inter, system-ui, sans-serif",
+      fontSize: "14px",
+      primaryColor: "#EEF0FF",
+      primaryTextColor: "#0A1140",
+      primaryBorderColor: "#CDD2FF",
+      lineColor: "#8C93A8",
+      textColor: "#0A1140",
+      mainBkg: "#ffffff",
+      nodeTextColor: "#0A1140",
+      clusterBkg: "#FAFBFF",
+      clusterBorder: "#E2E4EC",
+      edgeLabelBackground: "#ffffff"
+    },
+    themeCSS: ".nodeLabel{line-height:1.35}.edgeLabel{font-size:12px;color:#3d4460}",
+    flowchart: {
+      htmlLabels: true,
+      curve: "basis",
+      padding: 16,
+      nodeSpacing: 28,
+      rankSpacing: 46,
+      wrappingWidth: 280,
+      useMaxWidth: true
+    }
+  });
+  const styles = {
+    lauris: "fill:#E8F6EE,stroke:#146C43,color:#0A1140",
+    sys: "fill:#EEF0FF,stroke:#1C0BFF,color:#0A1140",
+    money: "fill:#FBF3DC,stroke:#8A5A00,color:#0A1140",
+    stock: "fill:#F5F6F9,stroke:#8C93A8,color:#0A1140",
+    vo: "fill:#F1EDFC,stroke:#5B3FB8,color:#0A1140",
+    bad: "fill:#FCEBE7,stroke:#B3261E,color:#0A1140",
+    cli: "fill:#FFFFFF,stroke:#0A1140,color:#0A1140",
+    out: "fill:#0A1140,stroke:#0A1140,color:#ffffff"
+  };
+  (async () => {
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (e) {}
+    }
+    const nodes = [...document.querySelectorAll("script.mmd")];
+    for (const [i, node] of nodes.entries()) {
+      let src = node.textContent.replace(/^\n/, "").replace(/\n {6}/g, "\n");
+      for (const [name, style] of Object.entries(styles)) src += "\n  classDef " + name + " " + style;
+      const el = document.createElement("div");
+      el.className = "mermaid";
+      node.replaceWith(el);
+      try {
+        const { svg } = await mermaid.render("mmd-" + i, src);
+        el.innerHTML = svg;
+      } catch (err) {
+        el.className = "err";
+        el.textContent = "This schema did not draw: " + (err && err.message ? err.message : err);
+      }
+    }
+  })();
+</script>
 </body>
 </html>
